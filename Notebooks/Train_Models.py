@@ -5,7 +5,7 @@
 
 
 import import_ipynb
-from fetch_data import get_stock_data
+from Notebooks.fetch_data import get_stock_data
 from prophet import Prophet
 from sklearn.ensemble import RandomForestRegressor
 import xgboost as xgb
@@ -75,13 +75,6 @@ def train_xgboost_model(ticker: str):
 # In[93]:
 
 
-train_xgboost_model("NVDA")
-
-
-# In[94]:
-
-
-train_xgboost_model("AAPL")
 
 
 # In[95]:
@@ -136,7 +129,6 @@ def train_random_forest(ticker: str):
 # In[97]:
 
 
-train_random_forest("AAPL")
 
 
 # In[98]:
@@ -205,18 +197,17 @@ def prophet_predict(ticker: str, periods: int = 30):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.show()
-    return model
+    output_dir = os.path.join(os.path.dirname(__file__), '..', 'static')
+    os.makedirs(output_dir, exist_ok=True)
+    fig_path = os.path.join(output_dir, f"{ticker}_prophet.png")
+    plt.savefig(fig_path)
+    plt.close(fig)
+    return model, df
 
 
-# In[99]:
-
-
-prophet_predict("NVDA")
-
-
-# In[100]:
-
-
-prophet_predict("AAPL",50)
-
+if __name__ == "__main__":
+    train_xgboost_model("NVDA")
+    train_xgboost_model("AAPL")
+    train_random_forest("AAPL")
+    prophet_predict("NVDA")
+    prophet_predict("AAPL", 50)

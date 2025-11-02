@@ -12,7 +12,12 @@ import pandas as pd
 import yfinance as yf
 
 import matplotlib.pyplot as plt
-get_ipython().run_line_magic('matplotlib', 'inline')
+
+try:
+    get_ipython().run_line_magic('matplotlib', 'inline')
+except NameError:
+    pass
+
 
 
 # Data Exploration - To get specific ticker data
