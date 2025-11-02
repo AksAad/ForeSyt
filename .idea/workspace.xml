@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="88f6b1e2-92bc-4b7d-aba7-d541a39f38aa" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Notebooks/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Notebooks/Fetch_Data.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/Fetch_Data.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Notebooks/Train_Models.py" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/Train_Models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Notebooks/fetch_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/Notebooks/fetch_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/all_endpoints.py" beforeDir="false" afterPath="$PROJECT_DIR$/all_endpoints.py" afterDir="false" />
-    </list>
+    <list default="true" id="88f6b1e2-92bc-4b7d-aba7-d541a39f38aa" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
