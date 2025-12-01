@@ -19,7 +19,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import yfinance as yf
-
+import re
 import matplotlib.pyplot as plt
 
 
@@ -135,82 +135,212 @@ def train_random_forest(ticker: str):
 
 
 def prophet_predict(ticker: str, periods: int = 30):
-    df = get_stock_data(ticker.lower())
+
+    original_ticker = ticker  
+    ticker = ticker.strip().lower()
+
+
+    df = get_stock_data(ticker)         
     df = df.sort_values('Date').reset_index(drop=True)
+
+
     df_prophet = df.rename(columns={'Date': 'ds', 'Close': 'y'})
     df_prophet['ds'] = pd.to_datetime(df_prophet['ds']).dt.tz_localize(None)
-    split_idx = int(len(df_prophet) * 0.7)
-    train = df_prophet.iloc[:split_idx]
-    validation = df_prophet.iloc[split_idx:]
-    lag_features = [col for col in df.columns if "lag" in col]
 
-    model = Prophet(yearly_seasonality=True, weekly_seasonality=True, seasonality_mode="additive")
+    lag_features = [col for col in df_prophet.columns if "lag" in col]
+
+
+    split_idx = int(len(df_prophet) * 0.7)
+    train = df_prophet.iloc[:split_idx].copy()
+    validation = df_prophet.iloc[split_idx:].copy()
+
+    model = Prophet(
+        yearly_seasonality=True,
+        weekly_seasonality=True,
+        daily_seasonality=False,
+        seasonality_mode="additive",
+    )
     for name in lag_features:
         model.add_regressor(name)
+
     model.fit(train)
 
-    forecast_val = model.predict(validation[["ds"] + lag_features] if lag_features else validation[["ds"]])
-    y_true = validation['y'].values
-    y_pred = forecast_val['yhat'].values
+    if lag_features:
+        forecast_val = model.predict(validation[["ds"] + lag_features])
+    else:
+        forecast_val = model.predict(validation[["ds"]])
+
+    y_true = validation["y"].values
+    y_pred = forecast_val["yhat"].values
+
     rmse = np.sqrt(mean_squared_error(y_true, y_pred))
     mae = mean_absolute_error(y_true, y_pred)
     mape = np.mean(np.abs((y_true - y_pred) / y_true)) * 100
 
-    print(f"\nModel Performance for {ticker.upper()}:")
+    print(f"\nModel Performance for {original_ticker.upper()}:")
     print(f"RMSE: {rmse:.4f}")
     print(f"MAE:  {mae:.4f}")
     print(f"MAPE: {mape:.2f}%")
 
-    full_model = Prophet(yearly_seasonality=True, weekly_seasonality=True, seasonality_mode="additive")
+
+    full_model = Prophet(
+        yearly_seasonality=True,
+        weekly_seasonality=True,
+        daily_seasonality=False,
+        seasonality_mode="additive",
+    )
     for name in lag_features:
         full_model.add_regressor(name)
+
     full_model.fit(df_prophet)
 
-    future = full_model.make_future_dataframe(periods=periods)
-    future['ds'] = pd.to_datetime(future['ds']).dt.tz_localize(None)
-    for name in lag_features:
-        future[name] = 0
-    forecast_future = full_model.predict(future)
 
-    fig = plt.figure(figsize=(12, 6))
-    plt.plot(df["Date"].iloc[-365:], df["Close"].iloc[-365:], label="Actual", color="blue")
+    periods = int(periods)  
 
-    plt.plot(forecast_val["ds"], forecast_val["yhat"], label="Validation Forecast", color="orange")
-    plt.fill_between(
-        forecast_val["ds"],
-        forecast_val["yhat_lower"],
-        forecast_val["yhat_upper"],
-        color="orange",
-        alpha=0.2,
-        label="Validation Uncertainty"
+    last_date = df_prophet["ds"].max()
+    future_dates = pd.bdate_range(
+        start=last_date + pd.offsets.BDay(1),
+        periods=periods
+    )
+
+    y_history = list(df_prophet["y"].values)
+
+    future_rows = []
+
+    def extract_lag_steps(col_name: str) -> int:
+        """
+        Try to infer lag length from name (e.g. 'lag_1', 'close_lag5').
+        If not found, default to 1.
+        """
+        m = re.search(r"(\d+)", col_name)
+        return int(m.group(1)) if m else 1
+
+    for d in future_dates:
+        row = {"ds": d}
+
+        for name in lag_features:
+            lag_k = extract_lag_steps(name)
+            if len(y_history) >= lag_k:
+                row[name] = y_history[-lag_k]
+            else:
+                row[name] = y_history[0] 
+
+        row_df = pd.DataFrame([row])
+        pred_row = full_model.predict(row_df)
+
+        yhat = float(pred_row["yhat"].iloc[0])
+        yhat_lower = float(pred_row["yhat_lower"].iloc[0])
+        yhat_upper = float(pred_row["yhat_upper"].iloc[0])
+
+        row["yhat"] = yhat
+        row["yhat_lower"] = yhat_lower
+        row["yhat_upper"] = yhat_upper
+
+        future_rows.append(row)
+        y_history.append(yhat) 
+
+    forecast_future = pd.DataFrame(future_rows)
+
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    forecast_start = forecast_future["ds"].iloc[0]
+    zoom_start = forecast_start - pd.Timedelta(days=60)
+    zoom_end = forecast_future["ds"].iloc[-1]
+
+
+    df_zoom = df.copy()
+    df_zoom["Date"] = pd.to_datetime(df_zoom["Date"]).dt.tz_localize(None)
+    mask_hist = (df_zoom["Date"] >= zoom_start) & (df_zoom["Date"] <= zoom_end)
+
+    ax.plot(
+        df_zoom.loc[mask_hist, "Date"],
+        df_zoom.loc[mask_hist, "Close"],
+        label="Actual Close",
+        linewidth=1.6,
+    )
+
+    mask_val_zoom = (forecast_val["ds"] >= zoom_start) & (forecast_val["ds"] <= last_date)
+    ax.plot(
+        forecast_val.loc[mask_val_zoom, "ds"],
+        forecast_val.loc[mask_val_zoom, "yhat"],
+        label="Validation Forecast",
+        linewidth=1.6,
+    )
+    ax.fill_between(
+        forecast_val.loc[mask_val_zoom, "ds"],
+        forecast_val.loc[mask_val_zoom, "yhat_lower"],
+        forecast_val.loc[mask_val_zoom, "yhat_upper"],
+        alpha=0.18,
+        label="Validation Uncertainty",
     )
 
 
-    plt.plot(forecast_future["ds"].iloc[-periods:],forecast_future["yhat"].iloc[-periods:],label=f"Future {periods}-Day Forecast")
-    plt.fill_between(
-        forecast_future["ds"].iloc[-periods:],
-        forecast_future["yhat_lower"].iloc[-periods:],
-        forecast_future["yhat_upper"].iloc[-periods:],
-        color="green",
-        alpha=0.4,
-        label="Future Uncertainty"
+    ax.plot(
+        forecast_future["ds"],
+        forecast_future["yhat"],
+        label=f"Next {periods}-Business-Day Forecast",
+        linewidth=2.0,
+    )
+    ax.fill_between(
+        forecast_future["ds"],
+        forecast_future["yhat_lower"],
+        forecast_future["yhat_upper"],
+        alpha=0.3,
+        label="Future Uncertainty",
     )
 
-    plt.xlabel("Date")
-    plt.ylabel("Predicted `Close` price of Stock")
-    plt.title(f"{ticker.upper()} Model Forecast ({periods} Days Ahead)")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
 
-    output_dir = os.path.join(os.path.dirname(__file__), '..', 'static')
+    ax.axvline(
+        forecast_start,
+        linestyle="--",
+        linewidth=1.2,
+        label="Forecast Start",
+    )
+
+
+    ax.set_xlim(zoom_start, zoom_end)
+
+
+    train_start, train_end = train["ds"].min().date(), train["ds"].max().date()
+    val_start, val_end = validation["ds"].min().date(), validation["ds"].max().date()
+
+    fig.suptitle(
+        f"{original_ticker.upper()} Closing Price Forecast (Next {periods} Business Days)",
+        fontsize=14,
+        fontweight="bold",
+    )
+    ax.set_title(
+        f"Train: {train_start}–{train_end} | Val: {val_start}–{val_end}",
+        fontsize=10,
+    )
+
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Predicted Close Price")
+
+    metrics_text = f"RMSE: {rmse:.2f}\nMAE: {mae:.2f}\nMAPE: {mape:.2f}%"
+    ax.text(
+        0.01,
+        0.99,
+        metrics_text,
+        transform=ax.transAxes,
+        va="top",
+        ha="left",
+        bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+    )
+
+    ax.grid(True)
+    ax.legend()
+    fig.autofmt_xdate()
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+
+    output_dir = os.path.join(os.path.dirname(__file__), "..", "static")
     os.makedirs(output_dir, exist_ok=True)
-    fig_path = os.path.join(output_dir, f"{ticker}_prophet.png")
+    fig_path = os.path.join(output_dir, f"{original_ticker}_prophet.png")
     plt.savefig(fig_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
 
-    return model, df
-
+    return full_model, df
 
 
 if __name__ == "__main__":
