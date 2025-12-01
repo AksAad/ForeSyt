@@ -3,18 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Foresyt — Result</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='resultstyle.css') }}">
+    <link rel="stylesheet" href="static/result_style.css">
 </head>
 <body>
     <h1>Forecast Result — {{ ticker }}</h1>
     <div>
         <img src="{{ image_url }}" alt="Forecast Graph for {{ ticker }}">
-    </div>
-    <div>
-        <h2>Model Performance</h2>
-        <p>RMSE: {{ rmse }}</p>
-        <p>MAE: {{ mae }}</p>
-        <p>MAPE: {{ mape }}%</p>
     </div>
 
     <a href="{{ url_for('home') }}">Back to Home</a>

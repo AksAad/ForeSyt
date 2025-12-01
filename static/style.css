@@ -1,0 +1,197 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&family=Nunito:wght@300;400;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: "Nunito", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #fdf7e7;              
+    color: #222;
+    overflow-x: hidden;
+}
+
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px 60px;
+    position: relative;
+    z-index: 1;
+}
+
+.site-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.logo-text {
+    font-family: "Gloria Hallelujah", cursive;
+    font-size: 4.2rem;
+    line-height: 1;
+    transform: rotate(-2deg);
+    text-shadow: 2px 2px 0 #fff, 3px 3px 0 #000;
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+.tagline {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #444;
+    transform: rotate(-1deg);
+}
+
+.card {
+    width: 100%;
+    max-width: 520px;
+    background: #fffef7;
+    border: 3px solid #000;
+    border-radius: 18px;
+    padding: 24px 24px 28px;
+    box-shadow: 6px 6px 0 #000;
+    position: relative;
+    transform: rotate(0.8deg);
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    inset: 8px 10px;
+    border: 1px dashed #333;
+    border-radius: 14px;
+    pointer-events: none;
+}
+
+.card-title {
+    font-family: "Gloria Hallelujah", cursive;
+    font-size: 1.8rem;
+    margin-bottom: 18px;
+    transform: rotate(-1deg);
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: relative;
+    z-index: 2;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    font-family: "Gloria Hallelujah", cursive;
+    font-size: 1.1rem;
+    transform: rotate(-0.8deg);
+}
+
+input[type="text"] {
+    padding: 10px 14px;
+    font-size: 1.05rem;
+    border: 2px solid #000;
+    border-radius: 10px;
+    outline: none;
+    background: #fffdf2;
+    box-shadow: 3px 3px 0 #000;
+    transform: rotate(0.4deg);
+    font-family: "Nunito", system-ui, sans-serif;
+}
+
+input[type="text"]:focus {
+    border-style: dashed;
+    background: #fff5c4;
+}
+
+button[type="submit"] {
+    margin-top: 4px;
+    align-self: flex-start;
+    padding: 10px 24px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: "Gloria Hallelujah", cursive;
+    border: 3px solid #000;
+    border-radius: 999px;
+    background: #ffeb7b;
+    box-shadow: 4px 4px 0 #000;
+    cursor: pointer;
+    transform: rotate(-2deg);
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+}
+
+button[type="submit"]:hover {
+    transform: translate(-2px, -2px) rotate(-1deg);
+    box-shadow: 6px 6px 0 #000;
+    background: #ffe348;
+}
+
+.small-note {
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: #555;
+    font-style: italic;
+    transform: rotate(0.5deg);
+}
+
+.doodle-bg {
+    position: fixed;
+    z-index: 0;
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.doodle-bg--left {
+    width: 220px;
+    height: 220px;
+    left: -70px;
+    bottom: 10%;
+    border: 3px solid #000;
+    border-radius: 50% 60% 55% 65%;
+    background:
+        repeating-linear-gradient(
+            135deg,
+            rgba(255, 240, 120, 0.5),
+            rgba(255, 240, 120, 0.5) 8px,
+            transparent 8px,
+            transparent 14px
+        );
+    transform: rotate(-8deg);
+}
+
+.doodle-bg--right {
+    width: 260px;
+    height: 260px;
+    right: -80px;
+    top: 8%;
+    border: 3px solid #000;
+    border-radius: 60% 40% 70% 50%;
+    background:
+        radial-gradient(circle at 30% 30%, rgba(255, 180, 200, 0.7), transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(170, 220, 255, 0.7), transparent 55%);
+    transform: rotate(10deg);
+}
+
+.doodle-bg--top {
+    width: 100vw;
+    height: 80px;
+    top: 0;
+    left: 0;
+    background-image: repeating-linear-gradient(
+        90deg,
+        transparent 0 16px,
+        rgba(0, 0, 0, 0.1) 16px
+    )
+}

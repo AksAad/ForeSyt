@@ -1,16 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Foresyt</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/style.css">
+</head>
+
 </head>
 <body>
-    <h1>Foresyt</h1>
-    <form method="POST" action="{{ url_for('process_input') }}">
-        <label for="ticker_input">Enter Stock Ticker:</label>
-        <input type="text" id="ticker_input" name="user_input_field" required>
-        <button type="submit">Predict</button>
-    </form>
+    <!-- Background doodles -->
+    <div class="doodle-bg doodle-bg--left"></div>
+    <div class="doodle-bg doodle-bg--right"></div>
+    <div class="doodle-bg doodle-bg--top"></div>
 
+    <div class="page">
+        <header class="site-header">
+            <h1 class="logo-text">Foresyt</h1>
+            <p class="tagline">Sketch your stock predictions.</p>
+        </header>
+
+        <main class="card">
+            <h2 class="card-title">Stock Predictor</h2>
+
+            <form method="POST" action="{{ url_for('process_input') }}">
+                <div class="field-group">
+                    <label for="ticker_input">Enter Stock Ticker:</label>
+                    <input type="text" id="ticker_input" name="user_input_field" required>
+                </div>
+                <button type="submit">Predict!</button>
+            </form>
+
+            <p class="small-note">Try: AAPL, TSLA, MSFT…</p>
+        </main>
+    </div>
 </body>
+
 </html>
