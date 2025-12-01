@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from Notebooks.Train_Models import prophet_predict   # uses your existing function
+from Notebooks.Train_Models import prophet_predict   
 
 app = Flask(__name__)
 
