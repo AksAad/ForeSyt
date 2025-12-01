@@ -143,10 +143,12 @@ def prophet_predict(ticker: str, periods: int = 30):
     train = df_prophet.iloc[:split_idx]
     validation = df_prophet.iloc[split_idx:]
     lag_features = [col for col in df.columns if "lag" in col]
-    model = Prophet(yearly_seasonality=True,weekly_seasonality=True,seasonality_mode="additive")
+
+    model = Prophet(yearly_seasonality=True, weekly_seasonality=True, seasonality_mode="additive")
     for name in lag_features:
         model.add_regressor(name)
     model.fit(train)
+
     forecast_val = model.predict(validation[["ds"] + lag_features] if lag_features else validation[["ds"]])
     y_true = validation['y'].values
     y_pred = forecast_val['yhat'].values
@@ -159,11 +161,17 @@ def prophet_predict(ticker: str, periods: int = 30):
     print(f"MAE:  {mae:.4f}")
     print(f"MAPE: {mape:.2f}%")
 
-    future = model.make_future_dataframe(periods=periods)
+    full_model = Prophet(yearly_seasonality=True, weekly_seasonality=True, seasonality_mode="additive")
+    for name in lag_features:
+        full_model.add_regressor(name)
+    full_model.fit(df_prophet)
+
+    future = full_model.make_future_dataframe(periods=periods)
     future['ds'] = pd.to_datetime(future['ds']).dt.tz_localize(None)
     for name in lag_features:
-        future[name] = 0  
-    forecast_future = model.predict(future)
+        future[name] = 0
+    forecast_future = full_model.predict(future)
+
     fig = plt.figure(figsize=(12, 6))
     plt.plot(df["Date"].iloc[-365:], df["Close"].iloc[-365:], label="Actual", color="blue")
 
@@ -177,11 +185,8 @@ def prophet_predict(ticker: str, periods: int = 30):
         label="Validation Uncertainty"
     )
 
-    plt.plot(
-        forecast_future["ds"].iloc[-periods:],
-        forecast_future["yhat"].iloc[-periods:],
-        label=f"Future {periods}-Day Forecast"
-    )
+
+    plt.plot(forecast_future["ds"].iloc[-periods:],forecast_future["yhat"].iloc[-periods:],label=f"Future {periods}-Day Forecast")
     plt.fill_between(
         forecast_future["ds"].iloc[-periods:],
         forecast_future["yhat_lower"].iloc[-periods:],
@@ -197,12 +202,15 @@ def prophet_predict(ticker: str, periods: int = 30):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
+
     output_dir = os.path.join(os.path.dirname(__file__), '..', 'static')
     os.makedirs(output_dir, exist_ok=True)
     fig_path = os.path.join(output_dir, f"{ticker}_prophet.png")
-    plt.savefig(fig_path)
+    plt.savefig(fig_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
+
     return model, df
+
 
 
 if __name__ == "__main__":

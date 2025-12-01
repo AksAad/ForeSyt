@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Foresyt</title>
+</head>
+<body>
+    <h1>Foresyt</h1>
+    <form method="POST" action="{{ url_for('process_input') }}">
+        <label for="ticker_input">Enter Stock Ticker:</label>
+        <input type="text" id="ticker_input" name="user_input_field" required>
+        <button type="submit">Predict</button>
+    </form>
+
+</body>
+</html>
