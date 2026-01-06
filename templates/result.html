@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Foresyt — Result</title>
-    <link rel="stylesheet" href="static/result_style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='result_style.css') }}">
 </head>
 <body>
     <h1>Forecast Result — {{ ticker }}</h1>
@@ -12,6 +12,11 @@
     </div>
 
     <a href="{{ url_for('home') }}">Back to Home</a>
-
+    
+    <!-- Background doodles -->
+    <div class="doodle-bg doodle-bg--left"></div>
+    <div class="doodle-bg doodle-bg--right"></div>
+    <div class="doodle-bg doodle-bg--left-up"></div>
+    <div class="doodle-bg doodle-bg--right-down"></div>
 </body>
 </html>
