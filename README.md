@@ -67,13 +67,13 @@ The website interface was designed by my buddy:  **@Tezzy-4202**
 2. **Install dependencies**
 
    ```bash
-   pip install -r requirements.txt
+   pip install required modules
    ```
 
    or
 
    ```bash
-   uv install
+   uv install required modules
    ```
 
 3. **Run the backend**
